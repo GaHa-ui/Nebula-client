@@ -1,0 +1,10 @@
+{
+  "nebula.title": "Nebula Client",
+  "nebula.version": "Nebula Client v1.0",
+  "nebula.menu.singleplayer": "Singleplayer",
+  "nebula.menu.multiplayer": "Multiplayer",
+  "nebula.menu.options": "Options",
+  "nebula.menu.mods": "Mods",
+  "nebula.menu.exit": "Exit",
+  "nebula.loading": "Nebula Client"
+}
