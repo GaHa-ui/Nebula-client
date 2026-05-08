@@ -5,8 +5,6 @@ on:
     branches:
       - codex/develop-nebula-client-for-minecraft
   pull_request:
-    branches:
-      - codex/develop-nebula-client-for-minecraft
   workflow_dispatch:
 
 permissions:
@@ -33,7 +31,7 @@ jobs:
           gradle-version: '8.14.4'
 
       - name: Build and verify
-        run: gradle clean build verifyNebula --no-daemon --stacktrace --info
+        run: gradle clean build verifyNebula --no-daemon --stacktrace
 
       - name: Create checksum
         run: sha256sum build/libs/NebulaClient-1.0.0+1.21.11.jar > build/libs/NebulaClient-1.0.0+1.21.11.jar.sha256
