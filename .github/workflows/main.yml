@@ -3,8 +3,7 @@ name: Build Nebula Client
 on:
   push:
     branches:
-      - main
-      - work
+      - codex/develop-nebula-client-for-minecraft
   pull_request:
   workflow_dispatch:
 
