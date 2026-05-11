@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nebula Client UI Preview</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { overflow: hidden; background: #02006b; color: white; height: 100vh; }
+    .background { position: fixed; inset: 0; background: radial-gradient(circle at 20% 20%, rgba(0,0,255,0.25), transparent 30%), radial-gradient(circle at 70% 40%, rgba(0,0,255,0.2), transparent 30%), radial-gradient(circle at 40% 80%, rgba(0,0,255,0.18), transparent 25%), linear-gradient(120deg, #00004f, #02006b, #00003d); overflow: hidden; }
+    .background::before, .background::after { content: ""; position: absolute; inset: -20%; background: repeating-radial-gradient(circle at center, transparent 0px, rgba(0,68,255,0.12) 3px, transparent 12px); mix-blend-mode: screen; animation: flow 30s linear infinite; opacity: .7; filter: blur(1px); }
+    .background::after { animation-direction: reverse; animation-duration: 45s; opacity: .4; }
+    @keyframes flow { 0% { transform: translate(-3%,-3%) rotate(0deg) scale(1); } 50% { transform: translate(3%,3%) rotate(180deg) scale(1.05); } 100% { transform: translate(-3%,-3%) rotate(360deg) scale(1); } }
+    .fade-in { animation: fadeIn .5s ease forwards; }
+    .fade-out { animation: fadeOut .4s ease forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translate(-50%, calc(-50% + 10px)); } to { opacity: 1; transform: translate(-50%, -50%); } }
+    @keyframes fadeOut { from { opacity: 1; transform: translate(-50%, -50%); } to { opacity: 0; transform: translate(-50%, calc(-50% + 10px)); } }
+    .clock { position: absolute; top: 80px; width: 100%; text-align: center; font-size: 7rem; font-weight: 300; letter-spacing: 3px; text-shadow: 0 0 20px rgba(255,255,255,0.2); user-select: none; }
+    .menu-panel, .mode-panel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 580px; height: 160px; background: rgba(220,220,220,0.15); border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(16px); border-radius: 20px; display: flex; align-items: center; justify-content: center; gap: 28px; box-shadow: 0 0 40px rgba(0,0,0,0.35); transition: all .35s ease; }
+    .mode-panel { display: none; flex-direction: column; gap: 18px; height: 240px; }
+    .logo-btn { width: 84px; height: 84px; border-radius: 50%; border: none; cursor: pointer; background: rgba(0,0,0,0.65); color: white; font-size: 2rem; transition: all .25s ease; box-shadow: 0 0 12px rgba(255,255,255,0.15); }
+    .logo-btn:hover { transform: scale(1.12); box-shadow: 0 0 22px rgba(0,102,255,0.8); background: rgba(10,10,10,0.9); }
+    .nebula-icon { border-radius: 18px; width: 88px; height: 88px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; background: rgba(0,0,0,0.6); box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+    .mode-button { width: 75%; padding: 16px; border: none; border-radius: 14px; background: rgba(255,255,255,0.08); color: white; font-size: 1.2rem; cursor: pointer; transition: all .25s ease; backdrop-filter: blur(6px); }
+    .mode-button:hover { transform: scale(1.03); background: rgba(0,102,255,0.35); box-shadow: 0 0 20px rgba(0,102,255,0.5); }
+    .back-button { position: absolute; top: 20px; left: 20px; padding: 10px 16px; border: none; border-radius: 10px; background: rgba(255,255,255,0.1); color: white; cursor: pointer; transition: all .2s ease; }
+    .back-button:hover { background: rgba(255,255,255,0.2); }
+    .branding { position: absolute; left: 14px; bottom: 12px; font-size: 2rem; font-weight: bold; text-shadow: 0 0 12px rgba(255,255,255,0.2); }
+    .exit-btn { position: absolute; right: 16px; bottom: 16px; width: 52px; height: 52px; border-radius: 14px; border: none; background: rgba(255,255,255,0.08); color: white; font-size: 1.4rem; cursor: pointer; transition: all .25s ease; }
+    .exit-btn:hover { transform: scale(1.08); background: rgba(255,0,0,0.4); box-shadow: 0 0 20px rgba(255,0,0,0.5); }
+    .notification { position: absolute; bottom: 90px; right: 20px; background: rgba(0,0,0,0.5); padding: 14px 20px; border-radius: 14px; opacity: 0; transition: opacity .3s ease; backdrop-filter: blur(10px); }
+    @media (max-width: 700px) { .clock { font-size: 4rem; } .menu-panel, .mode-panel { width: 92%; } }
+  </style>
+</head>
+<body>
+  <div class="background"></div>
+  <div class="clock" id="clock">15:10:00</div>
+  <div class="menu-panel fade-in" id="mainMenu">
+    <div class="nebula-icon">✦</div>
+    <button class="logo-btn" id="playBtn">▶</button>
+    <button class="logo-btn">☰</button>
+    <button class="logo-btn">⚙</button>
+  </div>
+  <div class="mode-panel" id="modeMenu">
+    <button class="back-button" id="backBtn">← Назад</button>
+    <button class="mode-button">Singleplayer</button>
+    <button class="mode-button">Multiplayer</button>
+  </div>
+  <div class="branding">Nebula Client</div>
+  <button class="exit-btn" id="exitBtn">⨉</button>
+  <div class="notification" id="notification"></div>
+  <script>
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+    const playBtn = document.getElementById('playBtn');
+    const mainMenu = document.getElementById('mainMenu');
+    const modeMenu = document.getElementById('modeMenu');
+    const backBtn = document.getElementById('backBtn');
+    const exitBtn = document.getElementById('exitBtn');
+    const notification = document.getElementById('notification');
+    function switchMenus(hideEl, showEl) {
+      hideEl.classList.remove('fade-in');
+      hideEl.classList.add('fade-out');
+      setTimeout(() => {
+        hideEl.style.display = 'none';
+        hideEl.classList.remove('fade-out');
+        showEl.style.display = 'flex';
+        showEl.classList.add('fade-in');
+      }, 350);
+    }
+    playBtn.addEventListener('click', () => switchMenus(mainMenu, modeMenu));
+    backBtn.addEventListener('click', () => switchMenus(modeMenu, mainMenu));
+    exitBtn.addEventListener('click', () => {
+      notification.textContent = 'Closing Nebula Client...';
+      notification.style.opacity = '1';
+      document.body.style.transition = 'opacity .8s ease';
+      document.body.style.opacity = '0';
+    });
+  </script>
+</body>
+</html>
