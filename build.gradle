@@ -1,0 +1,55 @@
+plugins {
+    id 'java'
+}
+
+group = 'dev.nebula'
+version = '1.0.0+1.21.11'
+
+base {
+    archivesName = 'NebulaClient'
+}
+
+java {
+    withSourcesJar()
+}
+
+
+sourceSets {
+    compileOnlyStubs { java.srcDir 'src/compileOnly/java' }
+}
+
+configurations {
+    testImplementation.extendsFrom compileOnlyStubsImplementation
+}
+
+dependencies {
+    compileOnly sourceSets.compileOnlyStubs.output
+}
+
+compileJava.dependsOn compileCompileOnlyStubsJava
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'dev.nebula.client.launcher.NebulaCli'
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand version: project.version
+    }
+}
+
+tasks.register('verifyNebula', JavaExec) {
+    group = 'verification'
+    description = 'Runs Nebula client architecture diagnostics.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'dev.nebula.client.util.NebulaDiagnostics'
+}
